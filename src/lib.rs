@@ -1,5 +1,7 @@
 pub mod shape;
 
+use std::fmt::Debug;
+
 use parry3d::bounding_volume::BoundingVolume;
 use parry3d::{
     math::Isometry,
@@ -7,7 +9,68 @@ use parry3d::{
 };
 use shape::{Aabb, Ball, Frustum, Obb, Plane, Point3, Ray, Sphere, Triangle};
 
+#[allow(unused_imports)]
 use crate::shape::{ConvexPolyhedron, HalfSpace, MTriangle, Vector3};
+
+pub enum Geomery {
+    Point(Point3),
+    Ray(Ray),
+    Plane(Plane),
+    Sphere(Sphere),
+    Aabb(Aabb),
+    Ball(Ball),
+    Triangle(Triangle),
+    Frustum(Frustum),
+    Obb(Obb),
+}
+
+impl Debug for Geomery {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Point(_) => f.debug_tuple("Point").finish(),
+            Self::Ray(_) => f.debug_tuple("Ray").finish(),
+            Self::Plane(_) => f.debug_tuple("Plane").finish(),
+            Self::Sphere(_) => f.debug_tuple("Sphere").finish(),
+            Self::Aabb(_) => f.debug_tuple("Aabb").finish(),
+            Self::Ball(_) => f.debug_tuple("Ball").finish(),
+            Self::Triangle(_) => f.debug_tuple("Triangle").finish(),
+            Self::Frustum(_) => f.debug_tuple("Frustum").finish(),
+            Self::Obb(_) => f.debug_tuple("Obb").finish(),
+        }
+    }
+}
+
+pub fn test_collision(geomery1: &Geomery, geomery2: &Geomery) -> bool {
+    match (geomery1, geomery2) {
+        (Geomery::Point(p), Geomery::Sphere(s)) => compute_point_and_sphere(p, s),
+        (Geomery::Point(p), Geomery::Aabb(ab)) => compute_point_and_aabb(p, ab),
+        (Geomery::Point(p), Geomery::Obb(obb)) => compute_point_and_obb(p, obb),
+        (Geomery::Ray(r), Geomery::Sphere(s)) => compute_ray_and_sphere(r, s),
+        (Geomery::Ray(r), Geomery::Aabb(ab)) => compute_ray_and_aabb(r, ab),
+        (Geomery::Ray(r), Geomery::Triangle(t)) => compute_ray_and_triangle(r, t),
+        (Geomery::Ray(r), Geomery::Obb(obb)) => compute_ray_and_obb(r, obb),
+        (Geomery::Plane(p), Geomery::Triangle(t)) => compute_plane_and_triangle(p, t),
+        (Geomery::Sphere(s), Geomery::Plane(p)) => compute_sphere_and_plane(s, p),
+        (Geomery::Sphere(s1), Geomery::Sphere(s2)) => compute_sphere_and_sphere(s1, s2),
+        (Geomery::Sphere(s), Geomery::Aabb(ab)) => compute_sphere_and_aabb(s, ab),
+        (Geomery::Sphere(s), Geomery::Triangle(t)) => compute_sphere_and_triangle(s, t),
+        (Geomery::Sphere(s), Geomery::Frustum(f)) => compute_sphere_and_frustum(s, f),
+        (Geomery::Sphere(s), Geomery::Obb(obb)) => compute_sphere_and_obb(s, obb),
+        (Geomery::Aabb(ab), Geomery::Plane(p)) => compute_aabb_and_plane(ab, p),
+        (Geomery::Aabb(ab1), Geomery::Aabb(ab2)) => compute_aabb_and_aabb(ab1, ab2),
+        (Geomery::Aabb(ab), Geomery::Triangle(t)) => compute_aabb_and_triangle(ab, t),
+        (Geomery::Aabb(ab), Geomery::Frustum(f)) => compute_aabb_and_frustum(ab, f),
+        (Geomery::Aabb(ab), Geomery::Obb(obb)) => compute_aabb_and_obb(ab, obb),
+        (Geomery::Triangle(t1), Geomery::Triangle(t2)) => compute_triangle_and_triangle(t1, t2),
+        (Geomery::Obb(obb), Geomery::Plane(p)) => compute_obb_and_plane(obb, p),
+        (Geomery::Obb(obb), Geomery::Triangle(t)) => compute_obb_and_triangle(obb, t),
+        (Geomery::Obb(ob1), Geomery::Obb(ob2)) => compute_obb_and_obb(ob1, ob2),
+        _ => panic!(
+            "not support geomery type test collision!!! g1: {:?}, g2: {:?}",
+            geomery1, geomery2
+        ),
+    }
+}
 
 pub fn compute_point_and_sphere(point: &Point3, sphere: &Sphere) -> bool {
     sphere.0.contains_point(&sphere.1, point)
