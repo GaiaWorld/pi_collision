@@ -9,4 +9,4 @@ license = "MIT OR Apache-2.0"
 keywords = ["scene control"]
 
 [dependencies]
-parry3d = "0.9"
+parry3d = "0.13"
