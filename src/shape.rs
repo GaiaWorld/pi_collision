@@ -1,5 +1,5 @@
 use parry3d::{
-    bounding_volume::AABB,
+    bounding_volume::aabb::Aabb as AABB,
     math::{Isometry as Isometry3D, Point, Vector},
     query::Ray as Ray3D,
     shape::{
